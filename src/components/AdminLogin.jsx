@@ -14,7 +14,7 @@ const AdminLogin = ({ onLogin }) => {
     e.preventDefault();
     setError('');
     try {
-      const response = await axios.post(`${API_URL}/admin/login`, {
+      const response = await axios.post(`${API_URL}/api/admin/login`, {
         username,
         password,
       });
