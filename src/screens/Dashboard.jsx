@@ -1,47 +1,46 @@
-// src/screens/Dashboard.js
-import React, { useState } from 'react';
-import PlayerList from '../components/PlayerList';
-import RegistrationForm from '../components/RegistrationForm';
-import { Container, Row, Col, Navbar, Button } from 'react-bootstrap'; // Import Bootstrap components
+import React from 'react';
+import { Navbar, Nav, Container, Button } from 'react-bootstrap';
 
-const Dashboard = ({ onLogout }) => {
-  const [refreshKey, setRefreshKey] = useState(0); 
-  
-  const handleRegistrationSuccess = () => {
-    setRefreshKey(prevKey => prevKey + 1); 
-    alert('Player registered successfully!');
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    onLogout();
-  };
-
+const Dashboard = ({ onLogout, setView }) => {
   return (
-    <div className="dashboard-container">
-      <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
-        <Container fluid>
-          <Navbar.Brand href="#">ZORONONE Registration Dashboard</Navbar.Brand>
-          <Button variant="outline-light" onClick={handleLogout}>Logout</Button>
-        </Container>
-      </Navbar>
-
+    <Navbar
+      expand="lg"
+      className="bg-primary-green shadow-sm"
+      variant="dark"
+    >
       <Container fluid>
-        <Row>
-          {/* Registration Form (Takes full width on small screens, 4/12 on medium/large) */}
-          <Col lg={4} md={12} className="mb-4">
-            <h3 className="mb-3">⚽ New Player Registration</h3>
-            <RegistrationForm onSuccess={handleRegistrationSuccess} />
-          </Col>
-          
-          {/* Player List (Takes full width on small screens, 8/12 on medium/large) */}
-          <Col lg={8} md={12}>
-            <h3 className="mb-3">📋 Existing Players</h3>
-            <PlayerList key={refreshKey} />
-          </Col>
-        </Row>
+        <Navbar.Brand className="fw-bold text-white">
+          ZORONONE Admin
+        </Navbar.Brand>
+
+        <Navbar.Toggle aria-controls="admin-navbar" />
+        <Navbar.Collapse id="admin-navbar">
+          <Nav className="me-auto">
+            <Nav.Link
+              className="text-white fw-semibold"
+              onClick={() => setView('register')}
+            >
+              Registration
+            </Nav.Link>
+
+            <Nav.Link
+              className="text-white fw-semibold"
+              onClick={() => setView('players')}
+            >
+              Players
+            </Nav.Link>
+          </Nav>
+
+          <Button
+            variant="light"
+            className="fw-semibold"
+            onClick={onLogout}
+          >
+            Logout
+          </Button>
+        </Navbar.Collapse>
       </Container>
-    </div>
+    </Navbar>
   );
 };
 

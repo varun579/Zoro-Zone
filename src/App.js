@@ -1,39 +1,36 @@
-// src/App.js (Main Application file)
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import AdminLogin from './components/AdminLogin';
 import Dashboard from './screens/Dashboard';
-// import AdminSignup from './components/AdminSignup'; // You can build this next
+import RegistrationDashboard from './screens/RegistrationDashboard';
+import PlayersDashboard from './screens/PlayersDashboard';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [view, setView] = useState('register');
 
-  // Check for existing token on component mount
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
-    if (token) {
-      // In a real app, you'd verify the token with the server here.
-      // For simplicity, we just check for its existence.
-      setIsAuthenticated(true);
-    }
-    setLoading(false);
+    if (token) setIsAuthenticated(true);
   }, []);
 
-  if (loading) {
-    return <div>Loading app...</div>;
-  }
-  
-  // Basic routing based on authentication status
   if (!isAuthenticated) {
-    // Show Login page if not authenticated
     return <AdminLogin onLogin={() => setIsAuthenticated(true)} />;
-    
-    // If you add a proper router, you would handle the /signup path here:
-    // <Route path="/signup" element={<AdminSignup />} />
   }
 
-  // Show Dashboard if authenticated
-  return <Dashboard onLogout={() => setIsAuthenticated(false)} />;
+  return (
+    <>
+      <Dashboard
+        onLogout={() => {
+          localStorage.removeItem('adminToken');
+          setIsAuthenticated(false);
+        }}
+        setView={setView}
+      />
+
+      {view === 'register' && <RegistrationDashboard />}
+      {view === 'players' && <PlayersDashboard />}
+    </>
+  );
 }
 
 export default App;

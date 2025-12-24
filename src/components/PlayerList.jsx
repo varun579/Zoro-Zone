@@ -1,63 +1,205 @@
-// src/components/PlayerList.js
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import authAxios from '../api/axios';
-import { Table, Spinner, Alert, Card } from 'react-bootstrap'; // Import Bootstrap components
+import { Table, Button, Form, Alert, Modal } from 'react-bootstrap';
 
 const PlayerList = () => {
   const [players, setPlayers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
   const [error, setError] = useState('');
 
+  const [showEdit, setShowEdit] = useState(false);
+  const [editingPlayer, setEditingPlayer] = useState(null);
+
   useEffect(() => {
-    const fetchPlayers = async () => {
-      try {
-        const response = await authAxios.get('/users');
-        setPlayers(response.data);
-      } catch (err) {
-        setError('Failed to fetch players. Check if the admin token is valid.');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchPlayers();
   }, []);
 
-  if (loading) return <div className="text-center my-4"><Spinner animation="border" /> <p>Loading players...</p></div>;
+  const fetchPlayers = async () => {
+    try {
+      const res = await authAxios.get('/users');
+      setPlayers(res.data);
+    } catch {
+      setError('Failed to load players');
+    }
+  };
+
+  // =====================
+  // DELETE PLAYER
+  // =====================
+  const deletePlayer = async (id) => {
+    if (!window.confirm('Delete this player?')) return;
+
+    await authAxios.delete(`/users/${id}`);
+    setPlayers(players.filter(p => p._id !== id));
+  };
+
+  // =====================
+  // TOGGLE PAYMENT
+  // =====================
+  const togglePayment = async (player) => {
+    const updated = await authAxios.patch(`/users/${player._id}`, {
+      isPaid: !player.isPaid
+    });
+
+    setPlayers(players.map(p =>
+      p._id === player._id ? updated.data : p
+    ));
+  };
+
+  // =====================
+  // OPEN EDIT MODAL
+  // =====================
+  const openEdit = (player) => {
+    setEditingPlayer({ ...player });
+    setShowEdit(true);
+  };
+
+  // =====================
+  // SAVE EDIT
+  // =====================
+  const saveEdit = async () => {
+    const res = await authAxios.patch(
+      `/users/${editingPlayer._id}`,
+      editingPlayer
+    );
+
+    setPlayers(players.map(p =>
+      p._id === editingPlayer._id ? res.data : p
+    ));
+
+    setShowEdit(false);
+  };
+
+  const filteredPlayers = players.filter(p =>
+    p.fullName.toLowerCase().includes(search.toLowerCase()) ||
+    p.emailAddress.toLowerCase().includes(search.toLowerCase())
+  );
+
   if (error) return <Alert variant="danger">{error}</Alert>;
-  if (players.length === 0) return <Alert variant="info">No players registered yet.</Alert>;
 
   return (
-    <Card className="shadow-sm">
-      <Card.Body>
-        {/* Makes the table horizontally scrollable on small devices */}
-        <div className="table-responsive">
-          <Table striped bordered hover size="sm">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>DOB</th>
-                <th>Guardian</th>
-                <th>Contact #</th>
-                <th>Email</th>
-                <th>Paid</th>
-              </tr>
-            </thead>
-            <tbody>
-              {players.map((player) => (
-                <tr key={player._id}>
-                  <td>{player.fullName}</td>
-                  <td>{new Date(player.dateOfBirth).toLocaleDateString()}</td>
-                  <td>{player.parentGuardianName}</td>
-                  <td>{player.contactNumber}</td>
-                  <td>{player.emailAddress}</td>
-                  <td>{player.isPaid ? '✅' : '❌'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </div>
-      </Card.Body>
-    </Card>
+    <>
+      <Form.Control
+        placeholder="Search by name or email"
+        className="mb-3"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+
+      <Table bordered hover responsive>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Contact</th>
+            <th>Payment</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {filteredPlayers.map(player => (
+            <tr key={player._id}>
+              <td>{player.fullName}</td>
+              <td>{player.emailAddress}</td>
+              <td>{player.contactNumber}</td>
+
+              <td>
+                <Button
+                  size="sm"
+                  className="btn-primary-green"
+                  onClick={() => togglePayment(player)}
+                >
+                  {player.isPaid ? 'Paid' : 'Unpaid'}
+                </Button>
+              </td>
+
+              <td>
+                <Button
+                  size="sm"
+                  className="btn-primary-green me-2"
+                  onClick={() => openEdit(player)}
+                >
+                  Edit
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="danger"
+                  onClick={() => deletePlayer(player._id)}
+                >
+                  Delete
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+
+      {/* =====================
+          EDIT MODAL
+      ===================== */}
+      <Modal show={showEdit} onHide={() => setShowEdit(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Player</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          {editingPlayer && (
+            <>
+              <Form.Group className="mb-2">
+                <Form.Label>Full Name</Form.Label>
+                <Form.Control
+                  value={editingPlayer.fullName}
+                  onChange={(e) =>
+                    setEditingPlayer({
+                      ...editingPlayer,
+                      fullName: e.target.value
+                    })
+                  }
+                />
+              </Form.Group>
+
+              <Form.Group className="mb-2">
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  value={editingPlayer.emailAddress}
+                  onChange={(e) =>
+                    setEditingPlayer({
+                      ...editingPlayer,
+                      emailAddress: e.target.value
+                    })
+                  }
+                />
+              </Form.Group>
+
+              <Form.Group className="mb-2">
+                <Form.Label>Contact</Form.Label>
+                <Form.Control
+                  value={editingPlayer.contactNumber}
+                  onChange={(e) =>
+                    setEditingPlayer({
+                      ...editingPlayer,
+                      contactNumber: e.target.value
+                    })
+                  }
+                />
+              </Form.Group>
+            </>
+          )}
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowEdit(false)}>
+            Cancel
+          </Button>
+
+          <Button className="btn-primary-green" onClick={saveEdit}>
+            Save
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 };
 
