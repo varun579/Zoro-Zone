@@ -1,0 +1,32 @@
+:root {
+  --primary-green:#0B8700;
+}
+
+/* Backgrounds */
+.bg-primary-green {
+  background-color: var(--primary-green) !important;
+}
+
+/* Text */
+.text-primary-green {
+  color: var(--primary-green) !important;
+}
+
+/* Buttons */
+.btn-primary-green {
+  background-color: var(--primary-green);
+  border-color: var(--primary-green);
+  color: #ffffff;
+}
+
+.btn-primary-green:hover {
+  background-color: #10b002;
+  border-color: #10b002;
+  color: #ffffff;
+}
+
+/* Table header */
+.table thead {
+  background-color: var(--primary-green);
+  color: white;
+}
