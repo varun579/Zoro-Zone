@@ -1,7 +1,7 @@
 // src/api/axios.js
 import axios from 'axios';
 
-const API_URL = 'https://zoro-zone-backend.onrender.com'; 
+const API_URL = 'https://zoro-zone-backend.onrender.com/api'; 
 
 const authAxios = axios.create({
   baseURL: API_URL,

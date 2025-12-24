@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap';
 
-const API_URL = 'https://zoro-zone-backend.onrender.com';
+const API_URL = 'https://zoro-zone-backend.onrender.com/api';
 
 
 const AdminLogin = ({ onLogin }) => {
